@@ -24,6 +24,10 @@ class RiversUsers extends Component {
         haveMyRivers: true,
         isLoading: false
       })
+    } else {
+      this.setState({
+        isLoading:false
+      })
     }
   }
 
