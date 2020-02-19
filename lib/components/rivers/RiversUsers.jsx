@@ -43,7 +43,7 @@ class RiversUsers extends Component {
       )
     } else if (haveMyRivers) {
       return (
-        <Redirect to={{ pathname: `/myrivers/${this.props.currentUser._id}` }} />
+        <Redirect to={{ pathname: `/myrivers/${this.props.results[0].userId}` }} />
       )
     } else {
       return (
@@ -51,7 +51,7 @@ class RiversUsers extends Component {
           <p>Welcome to Flow Report.</p>
           {
             <div>
-              {this.props.currentUser && <Redirect to={{ pathname: `/rivers/` }} />}
+              {this.props.currentUser !== null && <Redirect to={{ pathname: `/rivers/` }} />}
               {!this.props.currentUser && <Components.AccountsLoginForm redirect={false} />}
             </div>
           }
