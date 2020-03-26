@@ -22,8 +22,8 @@ class MyRiver extends Component {
     return [
       <div>
         <div id={this.props.abbrev} data-id={this.props.stationName}>{this.props.stationName}</div>
-        <div>current CFS: {this.props.currentAmountCFS}</div>
-        <div>taken on {new Date(this.props.currentDateTime).toGMTString().slice(0,16)} at {formatedDate} </div><br></br>
+        <div id={this.props.abbrev} data-id={this.props.stationName}>current CFS: {this.props.currentAmountCFS}</div>
+        <div id={this.props.abbrev} data-id={this.props.stationName}>taken on {new Date(this.props.currentDateTime).toGMTString().slice(0,16)} at {formatedDate} </div><br></br>
       </div>
     ]
   }

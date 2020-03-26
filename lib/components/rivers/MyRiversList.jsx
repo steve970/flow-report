@@ -14,6 +14,9 @@ class MyRiversList extends Component {
 
   constructor(props) {
     super(props);
+    if( !props.currentUser && props.history ) {
+      props.history.push('/');
+    }
     this.state = {
       rivers: [],
       riverCharts: [],
@@ -24,7 +27,8 @@ class MyRiversList extends Component {
       myChart: {
         name: "",
         chart: []
-      }
+      },
+      documentId: ""
     };
     this.showChart = this.showChart.bind(this)
   }
@@ -62,7 +66,11 @@ class MyRiversList extends Component {
       isLoading: true,
     })
     if (this.props.results && needsToUpdate) {
-      const { dwr, usgs } = divideRivers(this.props.results[0].myRiversInfo)
+      let getUserData = this.props.results.filter( (result) => {
+        return result.userId === this.props.currentUser._id ? result : null
+      })
+      const documentId = getUserData[0]._id     // THIS IS THROWING AN ERROR AND REQUIRES AN EXTRA 5 seconds to load
+      const { dwr, usgs } = divideRivers(getUserData[0].myRiversInfo)
       let dwrCurrentRiverConditions = await currentDwrConditions({dwr}.dwr)
       let usgsCurrentRiverConditions = await currentUsgsConditions({usgs}.usgs)
       let currentDWRRiverChart = await currentDwrChart({dwr}.dwr)
@@ -71,33 +79,43 @@ class MyRiversList extends Component {
         rivers: this.state.rivers.concat( dwrCurrentRiverConditions, usgsCurrentRiverConditions ),
         riverCharts: this.state.riverCharts.concat( currentDWRRiverChart, currentUSGSRiverChart ),
         isLoading: false,
-        needsToUpdate: false
+        needsToUpdate: false,
+        documentId: documentId
       })
+    } else {
+      return null
     }
   }
 
-  async componentDidUpdate(prevProps, prevState) {
-      const {needsToUpdate} = this.state
-      if (prevProps.results !== this.props.results && needsToUpdate) {
-        const { dwr, usgs } = divideRivers(this.props.results[0].myRiversInfo)
-        let dwrCurrentRiverConditions = await currentDwrConditions({dwr}.dwr)
-        let usgsCurrentRiverConditions = await currentUsgsConditions({usgs}.usgs)
-        let currentDWRRiverChart = await currentDwrChart({dwr}.dwr)
-        let currentUSGSRiverChart = await currentUsgsChart({usgs}.usgs)
-        this.setState({
-          rivers: this.state.rivers.concat( dwrCurrentRiverConditions, usgsCurrentRiverConditions ),
-          riverCharts: this.state.riverCharts.concat( currentDWRRiverChart, currentUSGSRiverChart ),
-          isLoading: false
-        })
-      } else {
-        null
-      }
-    // if (prevProps.results === this.props.results) {
-    // }
+  async componentDidUpdate(prevProps, prevState) {    // * keep an eye out * //
+
+    const {needsToUpdate} = this.state
+    if (this.props.results !== prevProps.results && needsToUpdate) {
+      let getUserData = this.props.results.filter( (result) => {
+        return result.userId === this.props.currentUser._id ? result : null
+      })
+      const documentId = getUserData[0]._id
+      const { dwr, usgs } = divideRivers(getUserData[0].myRiversInfo)
+      let dwrCurrentRiverConditions = await currentDwrConditions({dwr}.dwr)
+      let usgsCurrentRiverConditions = await currentUsgsConditions({usgs}.usgs)
+      let currentDWRRiverChart = await currentDwrChart({dwr}.dwr)
+      let currentUSGSRiverChart = await currentUsgsChart({usgs}.usgs)
+      this.setState({
+        documentId: documentId,
+        rivers: this.state.rivers.concat( dwrCurrentRiverConditions, usgsCurrentRiverConditions ),
+        riverCharts: this.state.riverCharts.concat( currentDWRRiverChart, currentUSGSRiverChart ),
+        isLoading: false
+      })
+    } else {
+    }
+  }
+
+  componentWillUnmount() {
+    this._isMounted = false;
   }
 
   render() {
-    const {error, rivers, isLoading, riverCharts, displayChart, myChart, needData} = this.state;
+    const {error, rivers, isLoading, riverCharts, displayChart, myChart, needData, documentId} = this.state;
     if (error) {
       return <div>Error</div>
     } else if (isLoading) {
@@ -114,7 +132,9 @@ class MyRiversList extends Component {
                   </div>
                 ]
               })}
-              <p>"* ADD Edit Form Here"</p>
+              <Components.ModalTrigger component={<a href="#">Add/Remove Rivers</a>}>
+                  <Components.RiversEditForm documentId={documentId} />
+              </Components.ModalTrigger>
             </Col>
             <Col>
               {displayChart && <Components.MyRiverChart chart={myChart.chart} name={myChart.name} />}

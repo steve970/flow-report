@@ -28,7 +28,6 @@ class MyRiverChart extends Component {
       return <div>Loading...</div>
     } else {
       return (
-        // <MyRiver />
         <VictoryChart
           height={1000}
           containerComponent={
@@ -71,6 +70,7 @@ class MyRiverChart extends Component {
             style={{
               data: { stroke: "#c43a31", strokeWidth: 1 },
               parent: { border: ".5px solid #ccc"},
+              labels: { fontSize:"25px" }
             }}
             interpolation="natural"
             data={this.props.chart}
